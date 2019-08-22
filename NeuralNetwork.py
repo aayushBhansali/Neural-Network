@@ -23,6 +23,22 @@ class NeuralNetwork:
 
         self.learning_rate = 0.1
 
+    # Leaky ReLU Activation
+    @staticmethod
+    def ReLU(x):
+        if x > 0:
+            return x
+        else:
+            return 0.1 * x
+
+    # Derivative of Leaky ReLU
+    @staticmethod
+    def dReLU(y):
+        if y > 0:
+            return 1
+        else:
+            return 0.1
+
 
     # Activation Function - Sigmoid
     @staticmethod
@@ -34,6 +50,7 @@ class NeuralNetwork:
     def dsigmoid(y):
         der = y * (1 - y)
         return der
+
 
     # Feeds the input throughout the network
     def feedforward(self, inputs):
@@ -49,7 +66,7 @@ class NeuralNetwork:
         hidden_op.add(self.bias_ih)
 
         # Pass through the sigmoid activation function
-        hidden_op = Matrix.map(hidden_op, self.sigmoid)
+        hidden_op = Matrix.map(hidden_op, self.ReLU)
 
         # Calculate final output
         final_op = self.weight_oh.multiply(hidden_op)
@@ -58,7 +75,7 @@ class NeuralNetwork:
         final_op.add(self.bias_oh)
 
         # Pass through sigmoid activation function
-        final_op = Matrix.map(final_op, self.sigmoid)
+        final_op = Matrix.map(final_op, self.ReLU)
 
         op = Matrix.toArray(final_op)
         return op
@@ -75,7 +92,7 @@ class NeuralNetwork:
         hidden_ip.add(self.bias_ih)
 
         # Sigmoid activation function
-        hidden_op = Matrix.map(hidden_ip, self.sigmoid)
+        hidden_op = Matrix.map(hidden_ip, self.ReLU)
 
         # Obtain Final Output of NN
         final_op = self.weight_oh.multiply(hidden_op)
@@ -84,7 +101,7 @@ class NeuralNetwork:
         final_op.add(self.bias_oh)
 
         # Sigmoid Activation function
-        final_op = Matrix.map(final_op, self.sigmoid)
+        final_op = Matrix.map(final_op, self.ReLU)
 
         # fetch Output
         output = Matrix.fromArray(outputs)
@@ -94,7 +111,7 @@ class NeuralNetwork:
         error = Matrix.subtract_stat(output, final_op)
 
         # Calculate Gradient
-        gradient = Matrix.map(final_op, self.dsigmoid)
+        gradient = Matrix.map(final_op, self.dReLU)
         gradient = gradient.element_wise_multiply(error)
         gradient.scalar(self.learning_rate)
         self.bias_oh.add(gradient)
@@ -112,7 +129,7 @@ class NeuralNetwork:
         hidden_error = who_t.multiply(error)
 
         # Calculate Gradient between Hidden Layer and Input Layer Weights
-        hidden_gradient = Matrix.map(hidden_op, self.dsigmoid)
+        hidden_gradient = Matrix.map(hidden_op, self.dReLU)
         hidden_gradient = hidden_gradient.element_wise_multiply(hidden_error)
         hidden_gradient.scalar(self.learning_rate)
 
